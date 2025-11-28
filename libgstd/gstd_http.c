@@ -374,6 +374,10 @@ parse_json_body (SoupMessage *msg, gchar **out_name, gchar **out_desc)
   JsonNode *root = NULL;
   GError *err = NULL;
 
+  g_return_if_fail (msg);
+  g_return_if_fail (out_name);
+  g_return_if_fail (out_desc);
+
   *out_name = NULL;
   *out_desc = NULL;
 
