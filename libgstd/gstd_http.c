@@ -382,12 +382,14 @@ parse_json_body (SoupMessage *msg, gchar **out_name, gchar **out_desc)
   *out_desc = NULL;
 
   soup_message_body_flatten (msg->request_body);
-  if (!msg->request_body || msg->request_body->length == 0)
+  if (!msg->request_body || msg->request_body->length == 0) {
     return;
+  }
 
   content_type = soup_message_headers_get_content_type (msg->request_headers, NULL);
-  if (!content_type || !g_str_has_prefix (content_type, "application/json"))
+  if (!content_type || !g_str_has_prefix (content_type, "application/json")) {
     return;
+  }
 
   parser = json_parser_new ();
   if (!json_parser_load_from_data (parser,
