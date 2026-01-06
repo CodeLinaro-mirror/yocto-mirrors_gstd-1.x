@@ -89,8 +89,17 @@ static GstdReturnCode do_put (SoupServer * server, SoupMsg * msg,
 static GstdReturnCode do_delete (SoupServer * server, SoupMsg * msg,
     char *name, char **output, const char *path, GstdSession * session);
 static void do_request (gpointer data_request, gpointer eval);
+
+#if SOUP_CHECK_VERSION(3,0,0)
+/* libsoup3: no context argument for server_callback */
 static void server_callback (SoupServer * server, SoupMsg * msg,
     const char *path, GHashTable * query, gpointer data);
+#else
+/* libsoup2.4: include context argument for server_callback */
+static void server_callback (SoupServer * server, SoupMsg * msg,
+    const char *path, GHashTable * query, SoupClientContext * context,
+    gpointer data);
+#endif
 
 static void
 gstd_http_class_init (GstdHttpClass * klass)
@@ -382,9 +391,18 @@ do_request (gpointer data_request, gpointer eval)
   return;
 }
 
+#if SOUP_CHECK_VERSION(3,0,0)
+/* libsoup3: no context argument for server_callback */
 static void
 server_callback (SoupServer * server, SoupMsg * msg,
     const char *path, GHashTable * query, gpointer data)
+#else
+/* libsoup2.4: include context argument for server_callback */
+static void
+server_callback (SoupServer * server, SoupMsg * msg,
+    const char *path, GHashTable * query, SoupClientContext * context,
+    gpointer data)
+#endif
 {
   GstdSession *session = NULL;
   GstdHttp *self = NULL;
@@ -413,8 +431,10 @@ server_callback (SoupServer * server, SoupMsg * msg,
 
 
 #if SOUP_CHECK_VERSION(3,0,0)
+/* libsoup3: no context argument for server_callback */
   response_headers = soup_server_message_get_request_headers (msg);
 #else
+/* libsoup2.4: include context argument for server_callback */
   response_headers = msg->response_headers;
 #endif
   soup_message_headers_append (response_headers,
