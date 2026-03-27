@@ -12,3 +12,5 @@ foreach app : app_examples
     dependencies : [gst_client_deps,lib_gstc_dep],
     install: false)
 endforeach
+
+subdir('rust')

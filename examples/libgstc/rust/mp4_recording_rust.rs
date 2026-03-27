@@ -1,0 +1,67 @@
+/*
+ * This file is part of GStreamer Daemon
+ * Copyright 2015-2022 Ridgerun, LLC (http://www.ridgerun.com)
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Library General Public
+ * License as published by the Free Software Foundation; either
+ * version 2 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Library General Public License for more details.
+ *
+ * You should have received a copy of the GNU Library General Public
+ * License along with this library; if not, write to the
+ * Free Software Foundation, Inc., 51 Franklin St, Fifth Floor,
+ * Boston, MA 02110-1301, USA.
+ */
+
+use gstc_rust::{Client, Status};
+use std::io;
+
+fn main() -> Result<(), Status> {
+    let client = Client::new("127.0.0.1", 5000, -1, true)?;
+
+    client.pipeline_create(
+        "pipe",
+        "qtmux name=mux ! filesink location=mp4_recording.mp4 \
+        videotestsrc is-live=true ! avenc_mpeg4 ! mux. \
+        audiotestsrc is-live=true ! lamemp3enc ! mux.",
+    )?;
+    println!("Pipeline created successfully!");
+
+    client.pipeline_play("pipe")?;
+    println!("Pipeline set to playing!");
+
+    println!("Press enter to stop pipeline...");
+    let mut line = String::new();
+    let _ = io::stdin().read_line(&mut line);
+
+    client.pipeline_inject_eos("pipe")?;
+    println!("EOS sent!");
+
+    print!("Waiting for EOS... ");
+    let bus_message = client.pipeline_bus_wait("pipe", "eos", 10_000_000_000)?;
+    if bus_message.status == Status::OK {
+        println!("received!");
+    } else if bus_message.status == Status::BUS_TIMEOUT {
+        println!("timeout!");
+        eprintln!("EOS not received, file may be unreadable");
+    } else {
+        println!("error!");
+        eprintln!(
+            "An error occurred waiting for EOS: {}",
+            bus_message.status.0
+        );
+    }
+
+    client.pipeline_stop("pipe")?;
+    println!("Pipeline set to null!");
+
+    client.pipeline_delete("pipe")?;
+    println!("Pipeline deleted!");
+
+    Ok(())
+}
