@@ -106,15 +106,15 @@ impl Transport {
         request: &str,
         timeout_ms: i32,
     ) -> Result<String, Status> {
-        if timeout_ms < 0 {
-            stream
-                .set_read_timeout(None)
-                .map_err(|_| Status::SOCKET_ERROR)?;
+        let timeout = if timeout_ms < 0 {
+            None
         } else {
-            stream
-                .set_read_timeout(Some(Duration::from_millis(timeout_ms as u64)))
-                .map_err(|_| Status::SOCKET_ERROR)?;
-        }
+            Some(Duration::from_millis(timeout_ms as u64))
+        };
+
+        stream
+            .set_read_timeout(timeout)
+            .map_err(|_| Status::SOCKET_ERROR)?;
 
         stream
             .write_all(request.as_bytes())
