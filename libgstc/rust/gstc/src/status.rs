@@ -1,6 +1,6 @@
 /*
  * This file is part of GStreamer Daemon
- * Copyright 2015-2022 Ridgerun, LLC (http://www.ridgerun.com)
+ * Copyright 2015-2026 RidgeRun, LLC (http://www.ridgerun.com)
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
