@@ -12,8 +12,8 @@ name = "pipeline_lifecycle"
 path = "../../../examples/libgstc/rust/pipeline_lifecycle_rust.rs"
 
 [[example]]
-name = "videotest_autovideosink"
-path = "../../../examples/libgstc/rust/videotest_autovideosink_rust.rs"
+name = "wait_on_bus"
+path = "../../../examples/libgstc/rust/wait_on_bus_rust.rs"
 
 [[example]]
 name = "simple_pipeline"
