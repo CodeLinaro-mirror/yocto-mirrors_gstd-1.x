@@ -65,6 +65,14 @@ impl Transport {
         Ok(transport)
     }
 
+    pub(crate) fn wait_time_ms(&self) -> i32 {
+        self.settings.wait_time_ms
+    }
+
+    pub(crate) fn clone_settings(&self) -> ConnectionSettings {
+        self.settings.clone()
+    }
+
     fn open_socket(&self) -> Result<TcpStream, Status> {
         TcpStream::connect((self.settings.address.as_str(), self.settings.port))
             .map_err(|_| Status::UNREACHABLE)

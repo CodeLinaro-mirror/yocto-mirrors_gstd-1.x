@@ -38,7 +38,6 @@ use std::thread;
 use std::thread::JoinHandle;
 
 pub struct Client {
-    settings: ConnectionSettings,
     transport: Mutex<Transport>,
 }
 
@@ -62,10 +61,9 @@ impl Client {
             keep_connection_open,
         };
 
-        let transport = Transport::new(settings.clone())?;
+        let transport = Transport::new(settings)?;
 
         Ok(Self {
-            settings,
             transport: Mutex::new(transport),
         })
     }
@@ -130,14 +128,14 @@ impl Client {
     pub fn pipeline_get_graph(&self, pipeline_name: &str) -> Result<String, Status> {
         self.cmd_read(
             &format!("/pipelines/{}/graph", pipeline_name),
-            self.settings.wait_time_ms,
+            self.default_wait_time_ms()?,
         )
     }
 
     pub fn pipeline_get_state(&self, pipeline_name: &str) -> Result<String, Status> {
         let response = self.cmd_read(
             &format!("/pipelines/{}/state", pipeline_name),
-            self.settings.wait_time_ms,
+            self.default_wait_time_ms()?,
         )?;
 
         json_child_string(&response, "response", "value")
@@ -161,7 +159,7 @@ impl Client {
                 "/pipelines/{}/elements/{}/properties/{}",
                 pipeline_name, element, property
             ),
-            self.settings.wait_time_ms,
+            self.default_wait_time_ms()?,
         )?;
 
         json_child_string(&response, "response", "value")
@@ -195,7 +193,7 @@ impl Client {
                 "/pipelines/{}/elements/{}/properties",
                 pipeline_name, element
             ),
-            self.settings.wait_time_ms,
+            self.default_wait_time_ms()?,
         )?;
 
         json_child_char_array(&response, "response", "nodes", "name")
@@ -243,14 +241,14 @@ impl Client {
     pub fn pipeline_list_elements(&self, pipeline_name: &str) -> Result<Vec<String>, Status> {
         let response = self.cmd_read(
             &format!("/pipelines/{}/elements/", pipeline_name),
-            self.settings.wait_time_ms,
+            self.default_wait_time_ms()?,
         )?;
 
         json_child_char_array(&response, "response", "nodes", "name")
     }
 
     pub fn pipeline_list(&self) -> Result<Vec<String>, Status> {
-        let response = self.cmd_read("/pipelines", self.settings.wait_time_ms)?;
+        let response = self.cmd_read("/pipelines", self.default_wait_time_ms()?)?;
         json_child_char_array(&response, "response", "nodes", "name")
     }
 
@@ -302,10 +300,8 @@ impl Client {
             &format!("{}", timeout_ns),
         )?;
 
-        let settings = ConnectionSettings {
-            keep_connection_open: false,
-            ..self.settings.clone()
-        };
+        let mut settings = self.transport_settings()?;
+        settings.keep_connection_open = false;
 
         let handle = thread::Builder::new()
             .name("gstc-bus-wait".to_string())
@@ -356,7 +352,7 @@ impl Client {
     ) -> Result<Vec<String>, Status> {
         let response = self.cmd_read(
             &format!("/pipelines/{}/elements/{}/signals", pipeline_name, element),
-            self.settings.wait_time_ms,
+            self.default_wait_time_ms()?,
         )?;
 
         json_child_char_array(&response, "response", "nodes", "name")
@@ -382,7 +378,7 @@ impl Client {
                 "/pipelines/{}/elements/{}/signals/{}/callback",
                 pipeline_name, element, signal
             ),
-            self.settings.wait_time_ms,
+            self.default_wait_time_ms()?,
         )
     }
 
@@ -397,13 +393,13 @@ impl Client {
                 "/pipelines/{}/elements/{}/signals/{}/disconnect",
                 pipeline_name, element, signal
             ),
-            self.settings.wait_time_ms,
+            self.default_wait_time_ms()?,
         )?;
         Ok(())
     }
 
     fn cmd_send(&self, request: &str) -> Result<(), Status> {
-        let response = self.send_request(request, self.settings.wait_time_ms)?;
+        let response = self.send_request(request, self.default_wait_time_ms()?)?;
         let code = json_get_int(&response, "code")?;
         let status = Status(code);
 
@@ -445,6 +441,16 @@ impl Client {
     fn send_request(&self, request: &str, timeout_ms: i32) -> Result<String, Status> {
         let mut guard = self.transport.lock().map_err(|_| Status::SOCKET_ERROR)?;
         guard.send_command(request, timeout_ms)
+    }
+
+    fn default_wait_time_ms(&self) -> Result<i32, Status> {
+        let guard = self.transport.lock().map_err(|_| Status::SOCKET_ERROR)?;
+        Ok(guard.wait_time_ms())
+    }
+
+    fn transport_settings(&self) -> Result<ConnectionSettings, Status> {
+        let guard = self.transport.lock().map_err(|_| Status::SOCKET_ERROR)?;
+        Ok(guard.clone_settings())
     }
 }
 
