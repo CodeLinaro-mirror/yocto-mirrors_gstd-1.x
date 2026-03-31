@@ -36,7 +36,7 @@ fn wait_for_state(
         }
 
         if start.elapsed() >= timeout {
-            return Err(Status::TIMEOUT);
+            return Err(Status::Timeout);
         }
 
         thread::sleep(Duration::from_millis(100));

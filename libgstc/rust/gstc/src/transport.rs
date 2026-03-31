@@ -75,7 +75,7 @@ impl Transport {
 
     fn open_socket(&self) -> Result<TcpStream, Status> {
         TcpStream::connect((self.settings.address.as_str(), self.settings.port))
-            .map_err(|_| Status::UNREACHABLE)
+            .map_err(|_| Status::Unreachable)
     }
 
     pub(crate) fn send_command(
@@ -84,14 +84,14 @@ impl Transport {
         timeout_ms: i32,
     ) -> Result<String, Status> {
         if request.is_empty() {
-            return Err(Status::NULL_ARGUMENT);
+            return Err(Status::NullArgument);
         }
 
         if self.settings.keep_connection_open {
             if let Some(stream) = self.stream.as_mut() {
                 Self::write_then_read(stream, request, timeout_ms)
             } else {
-                Err(Status::SOCKET_ERROR)
+                Err(Status::SocketError)
             }
         } else {
             let mut stream = self.open_socket()?;
@@ -114,26 +114,26 @@ impl Transport {
 
         stream
             .set_read_timeout(timeout)
-            .map_err(|_| Status::SOCKET_ERROR)?;
+            .map_err(|_| Status::SocketError)?;
 
         stream
             .write_all(request.as_bytes())
-            .map_err(|_| Status::SEND_ERROR)?;
+            .map_err(|_| Status::SendError)?;
 
         let mut response = Vec::<u8>::new();
         let mut buffer = [0_u8; 1024];
 
         loop {
             let n = match stream.read(&mut buffer) {
-                Ok(0) => return Err(Status::RECV_ERROR),
+                Ok(0) => return Err(Status::RecvError),
                 Ok(n) => n,
                 Err(err) if err.kind() == std::io::ErrorKind::TimedOut => {
-                    return Err(Status::SOCKET_TIMEOUT)
+                    return Err(Status::SocketTimeout)
                 }
                 Err(err) if err.kind() == std::io::ErrorKind::WouldBlock => {
-                    return Err(Status::SOCKET_TIMEOUT)
+                    return Err(Status::SocketTimeout)
                 }
-                Err(_) => return Err(Status::RECV_ERROR),
+                Err(_) => return Err(Status::RecvError),
             };
 
             if let Some(zero_idx) = buffer[..n].iter().position(|b| *b == 0) {
@@ -143,14 +143,14 @@ impl Transport {
 
             response.extend_from_slice(&buffer[..n]);
             if response.len() >= MAX_RESPONSE_LENGTH {
-                return Err(Status::LONG_RESPONSE);
+                return Err(Status::LongResponse);
             }
         }
 
         if response.len() >= MAX_RESPONSE_LENGTH {
-            return Err(Status::LONG_RESPONSE);
+            return Err(Status::LongResponse);
         }
 
-        String::from_utf8(response).map_err(|_| Status::MALFORMED)
+        String::from_utf8(response).map_err(|_| Status::Malformed)
     }
 }

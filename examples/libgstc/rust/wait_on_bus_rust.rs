@@ -30,7 +30,7 @@ fn main() -> Result<(), Status> {
     client.pipeline_play(pipeline_name)?;
 
     let bus_message = client.pipeline_bus_wait(pipeline_name, "eos", -1)?;
-    if bus_message.status != Status::OK {
+    if bus_message.status != Status::Ok {
         let _ = client.pipeline_stop(pipeline_name);
         let _ = client.pipeline_delete(pipeline_name);
         return Err(bus_message.status);

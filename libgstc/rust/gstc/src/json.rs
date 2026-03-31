@@ -33,12 +33,12 @@
 use crate::Status;
 
 pub(crate) fn json_get_int(json: &str, name: &str) -> Result<i32, Status> {
-    let start = find_key_value_start(json, name).ok_or(Status::NOT_FOUND)?;
+    let start = find_key_value_start(json, name).ok_or(Status::NotFound)?;
     parse_json_int(json, start)
 }
 
 pub(crate) fn json_is_null_field(json: &str, name: &str) -> Result<bool, Status> {
-    let start = find_key_value_start(json, name).ok_or(Status::NOT_FOUND)?;
+    let start = find_key_value_start(json, name).ok_or(Status::NotFound)?;
     let start = skip_ws(json, start);
     Ok(json[start..].starts_with("null"))
 }
@@ -70,7 +70,7 @@ pub(crate) fn json_child_char_array(
         }
 
         if array.as_bytes()[cursor_ws] != b'{' {
-            return Err(Status::TYPE_ERROR);
+            return Err(Status::TypeError);
         }
 
         let (obj, next_idx) = extract_balanced(array, cursor_ws, b'{', b'}')?;
@@ -110,7 +110,7 @@ fn find_key_value_start(json: &str, key: &str) -> Option<usize> {
 fn parse_json_int(json: &str, start: usize) -> Result<i32, Status> {
     let start = skip_ws(json, start);
     if start >= json.len() {
-        return Err(Status::MALFORMED);
+        return Err(Status::Malformed);
     }
 
     let bytes = json.as_bytes();
@@ -123,12 +123,12 @@ fn parse_json_int(json: &str, start: usize) -> Result<i32, Status> {
     }
 
     if end == start || (end == start + 1 && bytes[start] == b'-') {
-        return Err(Status::TYPE_ERROR);
+        return Err(Status::TypeError);
     }
 
     json[start..end]
         .parse::<i32>()
-        .map_err(|_| Status::TYPE_ERROR)
+        .map_err(|_| Status::TypeError)
 }
 
 fn extract_balanced(
@@ -139,7 +139,7 @@ fn extract_balanced(
 ) -> Result<(&str, usize), Status> {
     let bytes = json.as_bytes();
     if start >= bytes.len() || bytes[start] != open {
-        return Err(Status::TYPE_ERROR);
+        return Err(Status::TypeError);
     }
 
     let mut depth = 0i32;
@@ -169,28 +169,28 @@ fn extract_balanced(
         i += 1;
     }
 
-    Err(Status::MALFORMED)
+    Err(Status::Malformed)
 }
 
 fn extract_object_for_key<'a>(json: &'a str, key: &str) -> Result<&'a str, Status> {
-    let start = find_key_value_start(json, key).ok_or(Status::NOT_FOUND)?;
+    let start = find_key_value_start(json, key).ok_or(Status::NotFound)?;
     let start = skip_ws(json, start);
     let (obj, _) = extract_balanced(json, start, b'{', b'}')?;
     Ok(obj)
 }
 
 fn extract_array_for_key<'a>(json: &'a str, key: &str) -> Result<&'a str, Status> {
-    let start = find_key_value_start(json, key).ok_or(Status::TYPE_ERROR)?;
+    let start = find_key_value_start(json, key).ok_or(Status::TypeError)?;
     let start = skip_ws(json, start);
     let (arr, _) = extract_balanced(json, start, b'[', b']')?;
     Ok(arr)
 }
 
 fn extract_string_for_key(json: &str, key: &str) -> Result<String, Status> {
-    let start = find_key_value_start(json, key).ok_or(Status::NOT_FOUND)?;
+    let start = find_key_value_start(json, key).ok_or(Status::NotFound)?;
     let start = skip_ws(json, start);
     if start >= json.len() || json.as_bytes()[start] != b'"' {
-        return Err(Status::TYPE_ERROR);
+        return Err(Status::TypeError);
     }
 
     let mut i = start + 1;
@@ -207,5 +207,5 @@ fn extract_string_for_key(json: &str, key: &str) -> Result<String, Status> {
         i += 1;
     }
 
-    Err(Status::MALFORMED)
+    Err(Status::Malformed)
 }

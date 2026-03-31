@@ -31,7 +31,7 @@ fn main() -> Result<(), Status> {
         Some(path) => path,
         None => {
             eprintln!("Please provide a video to play");
-            return Err(Status::NULL_ARGUMENT);
+            return Err(Status::NullArgument);
         }
     };
 
@@ -59,7 +59,7 @@ fn main() -> Result<(), Status> {
 
     while !stop_flag.load(Ordering::Relaxed) {
         let message = client.pipeline_bus_wait("pipe", "eos", -1)?;
-        if message.status != Status::OK {
+        if message.status != Status::Ok {
             eprintln!("Unable to read from bus: {}", message.status.code());
             break;
         }

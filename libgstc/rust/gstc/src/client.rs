@@ -270,8 +270,8 @@ impl Client {
         let raw = self.cmd_read(&format!("/pipelines/{}/bus/message", pipeline_name), -1)?;
 
         let status = match json_is_null_field(&raw, "response") {
-            Ok(is_null) if is_null => Status::BUS_TIMEOUT,
-            Ok(_) => Status::OK,
+            Ok(is_null) if is_null => Status::BusTimeout,
+            Ok(_) => Status::Ok,
             Err(err) => err,
         };
 
@@ -325,7 +325,7 @@ impl Client {
                     Err(err) => err,
                 }
             })
-            .map_err(|_| Status::THREAD_ERROR)?;
+            .map_err(|_| Status::ThreadError)?;
 
         Ok(handle)
     }
@@ -439,17 +439,17 @@ impl Client {
     }
 
     fn send_request(&self, request: &str, timeout_ms: i32) -> Result<String, Status> {
-        let mut guard = self.transport.lock().map_err(|_| Status::SOCKET_ERROR)?;
+        let mut guard = self.transport.lock().map_err(|_| Status::SocketError)?;
         guard.send_command(request, timeout_ms)
     }
 
     fn default_wait_time_ms(&self) -> Result<i32, Status> {
-        let guard = self.transport.lock().map_err(|_| Status::SOCKET_ERROR)?;
+        let guard = self.transport.lock().map_err(|_| Status::SocketError)?;
         Ok(guard.wait_time_ms())
     }
 
     fn transport_settings(&self) -> Result<ConnectionSettings, Status> {
-        let guard = self.transport.lock().map_err(|_| Status::SOCKET_ERROR)?;
+        let guard = self.transport.lock().map_err(|_| Status::SocketError)?;
         Ok(guard.clone_settings())
     }
 }

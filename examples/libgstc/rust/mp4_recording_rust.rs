@@ -45,8 +45,8 @@ fn main() -> Result<(), Status> {
     print!("Waiting for EOS... ");
     let bus_message = client.pipeline_bus_wait("pipe", "eos", 10_000_000_000)?;
     match bus_message.status {
-        Status::OK => println!("received!"),
-        Status::BUS_TIMEOUT => {
+        Status::Ok => println!("received!"),
+        Status::BusTimeout => {
             println!("timeout!");
             eprintln!("EOS not received, file may be unreadable");
         },
