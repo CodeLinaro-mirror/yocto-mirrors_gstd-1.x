@@ -52,9 +52,9 @@ fn main() -> Result<(), Status> {
         },
         _ => {
             println!("error!");
-             eprintln!(
-            "An error occurred waiting for EOS: {}",
-            bus_message.status.0
+            eprintln!(
+                "An error occurred waiting for EOS: {}",
+                bus_message.status.code()
             );
         },
     }

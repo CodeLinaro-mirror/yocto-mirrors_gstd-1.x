@@ -401,7 +401,7 @@ impl Client {
     fn cmd_send(&self, request: &str) -> Result<(), Status> {
         let response = self.send_request(request, self.default_wait_time_ms()?)?;
         let code = json_get_int(&response, "code")?;
-        let status = Status(code);
+        let status = Status::from_code(code);
 
         if status.is_ok() {
             Ok(())
@@ -413,7 +413,7 @@ impl Client {
     fn cmd_send_get_response(&self, request: &str, timeout_ms: i32) -> Result<String, Status> {
         let response = self.send_request(request, timeout_ms)?;
         let code = json_get_int(&response, "code")?;
-        let status = Status(code);
+        let status = Status::from_code(code);
 
         if status.is_ok() {
             Ok(response)

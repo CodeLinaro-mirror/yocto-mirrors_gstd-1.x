@@ -33,27 +33,70 @@
 use std::fmt;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub struct Status(pub i32);
+pub enum Status {
+    OK,
+    NULL_ARGUMENT,
+    UNREACHABLE,
+    TIMEOUT,
+    OOM,
+    TYPE_ERROR,
+    MALFORMED,
+    NOT_FOUND,
+    SEND_ERROR,
+    RECV_ERROR,
+    SOCKET_ERROR,
+    THREAD_ERROR,
+    BUS_TIMEOUT,
+    SOCKET_TIMEOUT,
+    LONG_RESPONSE,
+    UNKNOWN(i32),
+}
 
 impl Status {
-    pub const OK: Status = Status(0);
-    pub const NULL_ARGUMENT: Status = Status(-1);
-    pub const UNREACHABLE: Status = Status(-2);
-    pub const TIMEOUT: Status = Status(-3);
-    pub const OOM: Status = Status(-4);
-    pub const TYPE_ERROR: Status = Status(-5);
-    pub const MALFORMED: Status = Status(-6);
-    pub const NOT_FOUND: Status = Status(-7);
-    pub const SEND_ERROR: Status = Status(-8);
-    pub const RECV_ERROR: Status = Status(-9);
-    pub const SOCKET_ERROR: Status = Status(-10);
-    pub const THREAD_ERROR: Status = Status(-11);
-    pub const BUS_TIMEOUT: Status = Status(-12);
-    pub const SOCKET_TIMEOUT: Status = Status(-13);
-    pub const LONG_RESPONSE: Status = Status(-14);
+    pub fn from_code(code: i32) -> Status {
+        match code {
+            0 => Status::OK,
+            -1 => Status::NULL_ARGUMENT,
+            -2 => Status::UNREACHABLE,
+            -3 => Status::TIMEOUT,
+            -4 => Status::OOM,
+            -5 => Status::TYPE_ERROR,
+            -6 => Status::MALFORMED,
+            -7 => Status::NOT_FOUND,
+            -8 => Status::SEND_ERROR,
+            -9 => Status::RECV_ERROR,
+            -10 => Status::SOCKET_ERROR,
+            -11 => Status::THREAD_ERROR,
+            -12 => Status::BUS_TIMEOUT,
+            -13 => Status::SOCKET_TIMEOUT,
+            -14 => Status::LONG_RESPONSE,
+            other => Status::UNKNOWN(other),
+        }
+    }
+
+    pub fn code(self) -> i32 {
+        match self {
+            Status::OK => 0,
+            Status::NULL_ARGUMENT => -1,
+            Status::UNREACHABLE => -2,
+            Status::TIMEOUT => -3,
+            Status::OOM => -4,
+            Status::TYPE_ERROR => -5,
+            Status::MALFORMED => -6,
+            Status::NOT_FOUND => -7,
+            Status::SEND_ERROR => -8,
+            Status::RECV_ERROR => -9,
+            Status::SOCKET_ERROR => -10,
+            Status::THREAD_ERROR => -11,
+            Status::BUS_TIMEOUT => -12,
+            Status::SOCKET_TIMEOUT => -13,
+            Status::LONG_RESPONSE => -14,
+            Status::UNKNOWN(code) => code,
+        }
+    }
 
     pub fn is_ok(self) -> bool {
-        self == Status::OK
+        matches!(self, Status::OK)
     }
 }
 
@@ -75,10 +118,10 @@ impl fmt::Display for Status {
             Status::BUS_TIMEOUT => "GSTC_BUS_TIMEOUT",
             Status::SOCKET_TIMEOUT => "GSTC_SOCKET_TIMEOUT",
             Status::LONG_RESPONSE => "GSTC_LONG_RESPONSE",
-            _ => "GSTC_UNKNOWN",
+            Status::UNKNOWN(_) => "GSTC_UNKNOWN",
         };
 
-        write!(f, "{} ({})", name, self.0)
+        write!(f, "{} ({})", name, self.code())
     }
 }
 

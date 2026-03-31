@@ -60,7 +60,7 @@ fn main() -> Result<(), Status> {
     while !stop_flag.load(Ordering::Relaxed) {
         let message = client.pipeline_bus_wait("pipe", "eos", -1)?;
         if message.status != Status::OK {
-            eprintln!("Unable to read from bus: {}", message.status.0);
+            eprintln!("Unable to read from bus: {}", message.status.code());
             break;
         }
 
