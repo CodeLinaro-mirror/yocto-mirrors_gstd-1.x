@@ -5,6 +5,7 @@ option('enable-gtk-doc', type : 'boolean', value : false, description : 'Use gtk
 option('enable-systemd', type : 'feature', value : 'auto', description : 'Enable systemd gstd.service install')
 option('enable-initd', type : 'feature', value : 'disabled', description : 'Enable init script install')
 option('enable-python', type : 'feature', value : 'auto', description : 'Install the pygstc library')
+option('enable-rust', type : 'feature', value : 'auto', description : 'Build the Rust gstc library')
 
 # String options
 option('with-gstd-runstatedir', type : 'string', value : '/var/run/gstd', description : 'Specify the location of the gstd\'s PID file')
