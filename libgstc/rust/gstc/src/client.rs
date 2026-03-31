@@ -92,7 +92,7 @@ impl Client {
         pipeline_desc: &str,
     ) -> Result<(), Status> {
         self.cmd_send(&format!(
-            "pipeline_crete_ref {} {}",
+            "pipeline_create_ref {} {}",
             pipeline_name, pipeline_desc
         ))
     }
