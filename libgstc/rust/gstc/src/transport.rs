@@ -88,11 +88,6 @@ impl Transport {
         }
 
         if self.settings.keep_connection_open {
-            if self.stream.is_none() {
-                let stream = self.open_socket()?;
-                self.stream = Some(stream);
-            }
-
             if let Some(stream) = self.stream.as_mut() {
                 Self::write_then_read(stream, request, timeout_ms)
             } else {
