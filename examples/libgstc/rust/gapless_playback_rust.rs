@@ -22,7 +22,8 @@ use gstc_rust::{Client, Status};
 use std::env;
 use std::io;
 use std::path::PathBuf;
-use std::sync::mpsc;
+use std::sync::Arc;
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::thread;
 
 fn main() -> Result<(), Status> {
@@ -36,7 +37,7 @@ fn main() -> Result<(), Status> {
 
     let abs_path = PathBuf::from(&video)
         .canonicalize()
-        .unwrap_or_else(|_| PathBuf::from(video));
+        .unwrap_or_else(|_| PathBuf::from(&video));
     let uri = format!("file://{}", abs_path.display());
 
     let client = Client::new("127.0.0.1", 5000, -1, true)?;
@@ -48,14 +49,15 @@ fn main() -> Result<(), Status> {
     println!("Pipeline set to playing!");
 
     println!("Press enter to stop the pipeline...");
-    let (tx, rx) = mpsc::channel::<()>();
+    let stop_flag = Arc::new(AtomicBool::new(false));
+    let thread_stop_flag = Arc::clone(&stop_flag);
     thread::spawn(move || {
         let mut line = String::new();
         let _ = io::stdin().read_line(&mut line);
-        let _ = tx.send(());
+        thread_stop_flag.store(true, Ordering::Relaxed);
     });
 
-    while rx.try_recv().is_err() {
+    while !stop_flag.load(Ordering::Relaxed) {
         let message = client.pipeline_bus_wait("pipe", "eos", -1)?;
         if message.status != Status::OK {
             eprintln!("Unable to read from bus: {}", message.status.0);

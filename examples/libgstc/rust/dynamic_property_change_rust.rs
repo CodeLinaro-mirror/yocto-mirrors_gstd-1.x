@@ -20,7 +20,8 @@
 
 use gstc_rust::{Client, Status};
 use std::io;
-use std::sync::mpsc;
+use std::sync::Arc;
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::thread;
 use std::time::Duration;
 
@@ -34,11 +35,12 @@ fn main() -> Result<(), Status> {
     println!("Pipeline set to playing!");
 
     println!("Press enter to stop the pipeline...");
-    let (tx, rx) = mpsc::channel::<()>();
+    let stop_flag = Arc::new(AtomicBool::new(false));
+    let thread_stop_flag = Arc::clone(&stop_flag);
     thread::spawn(move || {
         let mut line = String::new();
         let _ = io::stdin().read_line(&mut line);
-        let _ = tx.send(());
+        thread_stop_flag.store(true, Ordering::Relaxed);
     });
 
     let mut format = 0;
@@ -46,7 +48,7 @@ fn main() -> Result<(), Status> {
         client.element_set("pipe", "vts", "pattern", &format.to_string())?;
         format = (format + 1) % 10;
 
-        if rx.try_recv().is_ok() {
+        if stop_flag.load(Ordering::Relaxed) {
             break;
         }
 
