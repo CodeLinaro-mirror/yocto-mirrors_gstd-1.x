@@ -26,6 +26,14 @@ use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::thread;
 
+const RATE: f64 = 1.0;
+const FORMAT: i32 = 3;
+const FLAGS: i32 = 1;
+const START_TYPE: i32 = 1;
+const START: i64 = 0;
+const STOP_TYPE: i32 = 1;
+const STOP: i64 = -1;
+
 fn main() -> Result<(), Status> {
     let video = match env::args().nth(1) {
         Some(path) => path,
@@ -66,7 +74,8 @@ fn main() -> Result<(), Status> {
 
         println!("EOS message received!");
 
-        client.pipeline_seek("pipe", 1.0, 3, 1, 1, 0, 1, -1)?;
+        client.pipeline_seek("pipe", RATE, FORMAT, FLAGS, START_TYPE,
+                             START, STOP_TYPE, STOP)?;
         println!("Pipeline reset!");
     }
 
