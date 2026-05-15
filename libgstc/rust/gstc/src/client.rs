@@ -287,15 +287,6 @@ impl Client {
     where
         F: FnOnce(BusMessage) + Send + 'static,
     {
-        self.cmd_update(
-            &format!("/pipelines/{}/bus/types", pipeline_name),
-            &message_name,
-        )?;
-        self.cmd_update(
-            &format!("/pipelines/{}/bus/timeout", pipeline_name),
-            &format!("{}", timeout_ns),
-        )?;
-
         let mut settings = self.transport_settings()?;
         settings.keep_connection_open = false;
 
