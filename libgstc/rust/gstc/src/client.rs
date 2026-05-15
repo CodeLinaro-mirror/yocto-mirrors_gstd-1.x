@@ -375,26 +375,19 @@ impl Client {
         element: &str,
         signal: &str,
     ) -> Result<(), Status> {
-        let _ = self.cmd_read(
+        self.cmd_read(
             &format!(
                 "/pipelines/{}/elements/{}/signals/{}/disconnect",
                 pipeline_name, element, signal
             ),
             self.default_wait_time_ms()?,
-        )?;
-        Ok(())
+        )
+        .map(|_| ())
     }
 
     fn cmd_send(&self, request: &str) -> Result<(), Status> {
-        let response = self.send_request(request, self.default_wait_time_ms()?)?;
-        let code = json_get_int(&response, "code")?;
-        let status = Status::from_code(code);
-
-        if status.is_ok() {
-            Ok(())
-        } else {
-            Err(status)
-        }
+        self.cmd_send_get_response(request, self.default_wait_time_ms()?)
+        .map(|_| ())
     }
 
     fn cmd_send_get_response(&self, request: &str, timeout_ms: i32) -> Result<String, Status> {
