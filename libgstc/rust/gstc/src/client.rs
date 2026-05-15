@@ -267,16 +267,14 @@ impl Client {
 
         let raw = self.cmd_read(&format!("/pipelines/{}/bus/message", pipeline_name), -1)?;
 
-        let status = match json_is_null_field(&raw, "response") {
-            Ok(is_null) if is_null => Status::BusTimeout,
-            Ok(_) => Status::Ok,
-            Err(err) => err,
-        };
-
-        Ok(BusMessage {
-            status,
-            raw_response: raw,
-        })
+        match json_is_null_field(&raw, "response") {
+            Ok(true) => Err(Status::BusTimeout),
+            Ok(false) => Ok(BusMessage {
+                status: Status::Ok,
+                raw_response: raw,
+            }),
+            Err(err) => Err(err),
+        }
     }
 
     pub fn pipeline_bus_wait_async<F>(
