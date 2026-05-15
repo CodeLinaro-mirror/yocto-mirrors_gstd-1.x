@@ -172,15 +172,13 @@ impl Client {
         property: &str,
         value: &str,
     ) -> Result<(), Status> {
-        let _ = self.cmd_update(
+        self.cmd_update(
             &format!(
                 "/pipelines/{}/elements/{}/properties/{}",
                 pipeline_name, element, property
             ),
             value,
-        );
-
-        Ok(())
+        )
     }
 
     pub fn element_properties_list(
