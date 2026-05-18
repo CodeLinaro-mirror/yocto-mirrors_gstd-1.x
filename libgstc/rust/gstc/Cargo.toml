@@ -6,6 +6,7 @@ description = "Rust client for RidgeRun GStreamer Daemon (GstD)"
 license = "BSD-3-Clause"
 
 [dependencies]
+serde_json = "1"
 
 [[example]]
 name = "pipeline_lifecycle"
