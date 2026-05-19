@@ -19,18 +19,25 @@
  */
 
 use gstc::{Client, Status};
-use std::io;
+use std::{env, io};
 
-fn main() -> Result<(), Status> {
+fn main() -> Result<(), Box<dyn std::error::Error>> {
     let client = Client::new("127.0.0.1", 5000, -1, true)?;
+    let output = env::current_dir().map(|dir| dir.join("mp4_recording.mp4"))?;
+    let output = output.to_string_lossy();
+    let output = output.replace('\\', "\\\\").replace('"', "\\\"");
 
     client.pipeline_create(
         "pipe",
-        "qtmux name=mux ! filesink location=mp4_recording.mp4 \
+        &format!(
+            "qtmux name=mux ! filesink location=\"{}\" \
         videotestsrc is-live=true ! avenc_mpeg4 ! mux. \
         audiotestsrc is-live=true ! lamemp3enc ! mux.",
+            output
+        ),
     )?;
     println!("Pipeline created successfully!");
+    println!("Recording to: {}", output);
 
     client.pipeline_play("pipe")?;
     println!("Pipeline set to playing!");
@@ -62,6 +69,7 @@ fn main() -> Result<(), Status> {
 
     client.pipeline_delete("pipe")?;
     println!("Pipeline deleted!");
+    println!("Recording finalized at: {}", output);
 
     Ok(())
 }
