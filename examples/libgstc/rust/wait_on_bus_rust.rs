@@ -18,7 +18,7 @@
  * Boston, MA 02110-1301, USA.
  */
 
-use gstc_rust::{Client, Status};
+use gstc::{Client, Status};
 
 fn main() -> Result<(), Status> {
     let client = Client::new("127.0.0.1", 5000, 5000, false)?;

@@ -18,7 +18,7 @@
  * Boston, MA 02110-1301, USA.
  */
 
-use gstc_rust::{Client, Status};
+use gstc::{Client, Status};
 use std::io;
 
 fn main() -> Result<(), Status> {
