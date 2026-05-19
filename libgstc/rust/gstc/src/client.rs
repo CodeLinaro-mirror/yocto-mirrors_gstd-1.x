@@ -387,7 +387,7 @@ impl Client {
 
     fn cmd_send(&self, request: &str) -> Result<(), Status> {
         self.cmd_send_get_response(request, self.default_wait_time_ms()?)
-        .map(|_| ())
+            .map(|_| ())
     }
 
     fn cmd_send_get_response(&self, request: &str, timeout_ms: i32) -> Result<String, Status> {

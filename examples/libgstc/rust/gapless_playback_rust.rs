@@ -22,8 +22,8 @@ use gstc::{Client, Status};
 use std::env;
 use std::io;
 use std::path::PathBuf;
-use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::Arc;
 use std::thread;
 
 const RATE: f64 = 1.0;
@@ -74,8 +74,9 @@ fn main() -> Result<(), Status> {
 
         println!("EOS message received!");
 
-        client.pipeline_seek("pipe", RATE, FORMAT, FLAGS, START_TYPE,
-                             START, STOP_TYPE, STOP)?;
+        client.pipeline_seek(
+            "pipe", RATE, FORMAT, FLAGS, START_TYPE, START, STOP_TYPE, STOP,
+        )?;
         println!("Pipeline reset!");
     }
 
