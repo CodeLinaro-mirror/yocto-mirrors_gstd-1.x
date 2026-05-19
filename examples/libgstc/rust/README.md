@@ -1,6 +1,6 @@
 # Rust `libgstc` Examples
 
-These examples show how to control GStreamer Daemon (`gstd`) using the Rust `gstc_rust` client library.
+These examples show how to control GStreamer Daemon (`gstd`) using the Rust `gstc` client library.
 
 ## Prerequisites
 
@@ -8,28 +8,29 @@ These examples show how to control GStreamer Daemon (`gstd`) using the Rust `gst
 - Rust examples assume the daemon is reachable at that address and port
 - Some examples require GStreamer plugins such as `autovideosink`, `playbin`, `qtmux`, `avenc_mpeg4`, and `lamemp3enc`
 
+## How to Build
+To build the examples, run the following command from the repository root:
+```bash
+cargo build --examples
+```
+The examples will be available at the following path:
+ ```bash
+target/debug/examples/
+```
+
 ## How To Run
 
-You can run the examples with Cargo from the Rust client crate directory:
+You can run the examples directly as an executable or
+with Cargo from the Repository root:
 
 ```bash
-cd libgstc/rust/gstc
 cargo run --example simple_pipeline
 ```
 
 Examples that take an argument can be run like this:
 
 ```bash
-cd libgstc/rust/gstc
 cargo run --example gapless_playback -- /path/to/video.mp4
-```
-
-You can also build them with Meson from the repository root:
-
-```bash
-meson setup build
-meson compile -C build
-./build/examples/libgstc/rust/simple_pipeline
 ```
 
 ## Examples
@@ -57,7 +58,6 @@ Plays a media file with `playbin`, waits for EOS, then seeks back to the start t
 Run with:
 
 ```bash
-cd libgstc/rust/gstc
 cargo run --example gapless_playback -- /path/to/video.mp4
 ```
 
