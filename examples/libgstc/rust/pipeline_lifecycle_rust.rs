@@ -46,7 +46,7 @@ fn wait_for_state(
 fn main() -> Result<(), Status> {
     let client = Client::new("127.0.0.1", 5000, 5000, false)?;
 
-    client.pipeline_create("pipe", "videotestsrc ! fakesink")?;
+    client.pipeline_create("pipe", "videotestsrc is-live=true ! fakesink")?;
     client.pipeline_play("pipe")?;
 
     let state = wait_for_state(&client, "pipe", "PLAYING", Duration::from_secs(5))?;
