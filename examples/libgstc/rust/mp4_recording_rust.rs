@@ -25,7 +25,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let client = Client::new("127.0.0.1", 5000, -1, true)?;
     let output = env::current_dir().map(|dir| dir.join("mp4_recording.mp4"))?;
     let output = output.to_string_lossy();
-    let output = output.replace('\\', "\\\\").replace('"', "\\\"");
 
     client.pipeline_create(
         "pipe",
